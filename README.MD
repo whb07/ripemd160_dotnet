@@ -26,10 +26,14 @@ let bytesToHexString bytes =
 [<EntryPoint>]
 let main argv =
     let rip = new RIPEMD160Managed()
-    let hashValue = bytesToHexString (rip.ComputeHash(Text.ASCIIEncoding.ASCII.GetBytes "Hello World!"))
-    printfn "Hello world %A" hashValue
+    let hashValue = 
+        Text.ASCIIEncoding.ASCII.GetBytes "Hello World!"
+        |> rip.ComputeHash
+        |> bytesToHexString
+    printfn "Hash is %s" hashValue
+    // compare against known ripemd160 value
     assert ("8476ee4631b9b30ac2754b0ee0c47e161d3f724c" = hashValue) |> ignore
-    0
+    0 // return an integer exit code
 ```
 
 ## Contributing
