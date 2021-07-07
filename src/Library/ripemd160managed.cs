@@ -10,11 +10,12 @@
 // RIPEMD160Managed.cs
 //
 // RIPEMD-160 algorithm by Antoon Bosselaers, described at
-// http://www.esat.kuleuven.ac.be/~cosicart/ps/AB-9601/.
+// https://homes.esat.kuleuven.be/~bosselae/ripemd160.html.
 //
 
 namespace Crypto.RIPEMD {
     using System;
+    using System.Linq;
 
     public class RIPEMD160Managed : RIPEMD160
     {
@@ -1035,6 +1036,10 @@ namespace Crypto.RIPEMD {
 
             for (i = 0, j = 0; i < digits; i++, j += 4)
                 x[i] =  (uint) (block[j] | (block[j+1] << 8) | (block[j+2] << 16) | (block[j+3] << 24));
+        }
+
+        public string bytesToHexString(byte[] bytes){
+            return String.Concat(BitConverter.ToString(bytes).Split("-").Select(s => s.ToLower()));
         }
     }
 }
