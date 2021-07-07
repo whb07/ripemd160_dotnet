@@ -1,12 +1,4 @@
-﻿// ==++==
-// 
-//   Copyright (c) Microsoft Corporation.  All rights reserved.
-// 
-// ==--==
-// <OWNER>Microsoft</OWNER>
-// 
-
-//
+﻿//
 // RIPEMD160Managed.cs
 //
 // RIPEMD-160 algorithm by Antoon Bosselaers, described at
