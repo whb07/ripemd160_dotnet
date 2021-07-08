@@ -47,16 +47,6 @@ namespace Crypto.RIPEMD
         // public methods
         //
 
-        static public HashAlgorithm Create()
-        {
-            return Create("System.Security.Cryptography.HashAlgorithm");
-        }
-
-        static public HashAlgorithm Create(String hashName)
-        {
-            return (HashAlgorithm)CryptoConfig.CreateFromName(hashName);
-        }
-
         public byte[] ComputeHash(Stream inputStream)
         {
             if (m_bDisposed)
