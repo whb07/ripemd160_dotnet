@@ -33,18 +33,17 @@ namespace Crypto.RIPEMD {
         // public methods
         //
 
-        public override void Initialize() {
-            InitializeState();
-            var block = _blockDWords.Span;
-            for (int i = 0; i < block.Length; i++)
-            {
-                block[i] = 0;
-            }
-            var buff = _buffer.Span;
+        private static void ZeroOut<T>(Span<T> buff, T val)
+        {
             for (int i = 0; i < buff.Length; i++)
             {
-                buff[i] = 0;
+                buff[i] = val;
             }
+        }
+        public override void Initialize() {
+            InitializeState();
+            ZeroOut(_blockDWords.Span, (uint) 0);
+            ZeroOut(_buffer.Span, (byte) 0);
         }
 
         [System.Security.SecuritySafeCritical]  // auto-generated
