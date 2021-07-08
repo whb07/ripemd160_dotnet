@@ -1,9 +1,16 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
-  </PropertyGroup>
-  <PropertyGroup>
+    <PackageId>Crypto.RIPEMD</PackageId>
+    <Version>1.0.0</Version>
+    <Description>
+      This library is a port of the .NET Framework's Crypto RIPEMD160 class to run
+      in a .NET5 runtime. For more information see the canonical source -
+      https://docs.microsoft.com/en-us/dotnet/api/system.security.cryptography.ripemd160managed?view=netframework-4.8
+    </Description>
+    <Authors>William B</Authors>
+    <Company>Soverign</Company>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 </Project>
