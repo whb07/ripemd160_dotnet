@@ -7,6 +7,14 @@ For more info take a look at the canonical version:
 
 https://docs.microsoft.com/en-us/dotnet/api/system.security.cryptography.ripemd160managed
 
+## Install
+Nuget link: https://www.nuget.org/packages/Crypto.RIPEMD/
+
+```shell
+$ dotnet add package Crypto.RIPEMD --version 1.0.2
+```
+
+
 ## Tests
 ```shell
 $ dotnet test
