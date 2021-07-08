@@ -7,6 +7,11 @@ For more info take a look at the canonical version:
 
 https://docs.microsoft.com/en-us/dotnet/api/system.security.cryptography.ripemd160managed
 
+## Tests
+```shell
+$ dotnet test
+```
+
 ## Usage
 
 ```fsharp
