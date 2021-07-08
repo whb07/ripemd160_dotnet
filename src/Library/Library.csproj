@@ -7,6 +7,9 @@
       This library is a port of the .NET Framework's Crypto RIPEMD160 class to run
       in a .NET5 runtime. For more information see the canonical source -
       https://docs.microsoft.com/en-us/dotnet/api/system.security.cryptography.ripemd160managed?view=netframework-4.8
+
+      Source code can be viewed at:
+      https://github.com/whb07/ripemd160_dotnet
     </Description>
     <Authors>William B</Authors>
     <Company>Soverign</Company>
