@@ -13,7 +13,6 @@
     </Description>
     <Authors>William B</Authors>
     <Company>Soverign</Company>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 </Project>

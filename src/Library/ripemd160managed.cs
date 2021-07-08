@@ -11,10 +11,10 @@ namespace Crypto.RIPEMD {
 
     public class RIPEMD160Managed : RIPEMD160
     {
-        private byte[]      _buffer;
-        private long        _count; // Number of bytes in the hashed message
-        private uint[]      _stateMD160;
-        private uint[]      _blockDWords;
+        private Memory<byte> _buffer;
+        private long _count; // Number of bytes in the hashed message
+        private Memory<uint> _stateMD160;
+        private Memory<uint> _blockDWords;
 
         //
         // public constructors
@@ -35,10 +35,16 @@ namespace Crypto.RIPEMD {
 
         public override void Initialize() {
             InitializeState();
-
-            // Zeroize potentially sensitive information.
-            Array.Clear(_blockDWords, 0, _blockDWords.Length);
-            Array.Clear(_buffer, 0, _buffer.Length);
+            var block = _blockDWords.Span;
+            for (int i = 0; i < block.Length; i++)
+            {
+                block[i] = 0;
+            }
+            var buff = _buffer.Span;
+            for (int i = 0; i < buff.Length; i++)
+            {
+                buff[i] = 0;
+            }
         }
 
         [System.Security.SecuritySafeCritical]  // auto-generated
@@ -60,15 +66,24 @@ namespace Crypto.RIPEMD {
 
             // Use the same chaining values (IVs) as in SHA1, 
             // The convention is little endian however (same as MD4)
-            _stateMD160[0] =  0x67452301;
-            _stateMD160[1] =  0xefcdab89;
-            _stateMD160[2] =  0x98badcfe;
-            _stateMD160[3] =  0x10325476;
-            _stateMD160[4] =  0xc3d2e1f0;
+            var state = _stateMD160.Span;
+            state[0] =  0x67452301;
+            state[1] =  0xefcdab89;
+            state[2] =  0x98badcfe;
+            state[3] =  0x10325476;
+            state[4] =  0xc3d2e1f0;
+        }
+
+        public static void BlockCopy(Span<byte> src, int srcOffset, Span<byte> dst, int dstOffset, int count)
+        {
+            for (int i = srcOffset, j = dstOffset; i < count + srcOffset; i++, j++)
+            {
+                dst[j] = src[i];
+            }
         }
 
         [System.Security.SecurityCritical]  // auto-generated
-        private unsafe void _HashData(byte[] partIn, int ibStart, int cbSize) {
+        private void _HashData(byte[] partIn, int ibStart, int cbSize) {
             int bufferLen;
             int partInLen = cbSize;
             int partInBase = ibStart;
@@ -78,31 +93,27 @@ namespace Crypto.RIPEMD {
 
             /* Update number of bytes */
             _count += partInLen;
+            if ((bufferLen > 0) && (bufferLen + partInLen >= 64))
+            {
+                BlockCopy(partIn, partInBase, _buffer.Span, bufferLen, 64 - bufferLen);
+                partInBase += (64 - bufferLen);
+                partInLen -= (64 - bufferLen);
+                MDTransform(_blockDWords.Span, _stateMD160.Span, _buffer.Span);
+                bufferLen = 0;
+            }
 
-            fixed (uint* stateMD160 = _stateMD160) {
-                fixed (byte* buffer = _buffer) {
-                    fixed (uint* blockDWords = _blockDWords) {
-                        if ((bufferLen > 0) && (bufferLen + partInLen >= 64)) {
-                            Buffer.BlockCopy(partIn, partInBase, _buffer, bufferLen, 64 - bufferLen);
-                            partInBase += (64 - bufferLen);
-                            partInLen -= (64 - bufferLen);
-                            MDTransform(blockDWords, stateMD160, buffer);
-                            bufferLen = 0;
-                        }
+            /* Copy input to temporary buffer and hash */
+            while (partInLen >= 64)
+            {
+                BlockCopy(partIn, partInBase, _buffer.Span, 0, 64);
+                partInBase += 64;
+                partInLen -= 64;
+                MDTransform(_blockDWords.Span, _stateMD160.Span, _buffer.Span);
+            }
 
-                        /* Copy input to temporary buffer and hash */
-                        while (partInLen >= 64) {
-                            Buffer.BlockCopy(partIn, partInBase, _buffer, 0, 64);
-                            partInBase += 64;
-                            partInLen -= 64;
-                            MDTransform(blockDWords, stateMD160, buffer);
-                        }
-
-                        if (partInLen > 0) {
-                            Buffer.BlockCopy(partIn, partInBase, _buffer, bufferLen, partInLen);
-                        }
-                    }
-                }
+            if (partInLen > 0)
+            {
+                BlockCopy(partIn, partInBase, _buffer.Span, bufferLen, partInLen);
             }
         }
 
@@ -140,14 +151,14 @@ namespace Crypto.RIPEMD {
             _HashData(pad, 0, pad.Length);
 
             /* Store digest */
-            DWORDToLittleEndian (hash, _stateMD160, 5);
+            DWORDToLittleEndian (hash, _stateMD160.Span, 5);
 
             HashValue = hash;
             return hash;
         }
 
         [System.Security.SecurityCritical]  // auto-generated
-        private static unsafe void MDTransform (uint* blockDWords, uint* state, byte* block)
+        private static void MDTransform (Span<uint> blockDWords, Span<uint> state, Span<byte> block)
         {
             uint aa = state[0];
             uint bb = state[1];
@@ -1009,7 +1020,7 @@ namespace Crypto.RIPEMD {
         private static uint J (uint x, uint y, uint z) {
             return (x ^ (y | ~z));
         }
-        internal static void DWORDToLittleEndian (byte[] block, uint[] x, int digits) {
+        internal static void DWORDToLittleEndian (byte[] block, Span<uint> x, int digits) {
             int i;
             int j;
 
@@ -1022,7 +1033,7 @@ namespace Crypto.RIPEMD {
         }
 
         [System.Security.SecurityCritical]  // auto-generated
-        internal unsafe static void DWORDFromLittleEndian (uint* x, int digits, byte* block) {
+        internal static void DWORDFromLittleEndian (Span<uint> x, int digits, Span<byte> block) {
             int i;
             int j;
 
