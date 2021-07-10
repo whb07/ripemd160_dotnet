@@ -11,7 +11,7 @@ https://docs.microsoft.com/en-us/dotnet/api/system.security.cryptography.ripemd1
 Nuget link: https://www.nuget.org/packages/Crypto.RIPEMD/
 
 ```shell
-$ dotnet add package Crypto.RIPEMD --version 1.0.2
+$ dotnet add package Crypto.RIPEMD --version 1.0.3
 ```
 
 
@@ -29,20 +29,9 @@ open System
 open Crypto.RIPEMD // <-- this is the library
 
 
-let bytesToHexString bytes =
-    let text = BitConverter.ToString bytes
-    text.Split("-")
-    |> Array.map (fun x -> x.ToLower())
-    |> String.Concat
-
-
 [<EntryPoint>]
 let main argv =
-    let rip = new RIPEMD160Managed()
-    let hashValue = 
-        Text.ASCIIEncoding.ASCII.GetBytes "Hello World!"
-        |> rip.ComputeHash
-        |> bytesToHexString
+    let hashValue = RIPEMD160Managed.HashInString "Hello World!"
     printfn "Hash is %s" hashValue
     // compare against known ripemd160 value
     assert ("8476ee4631b9b30ac2754b0ee0c47e161d3f724c" = hashValue) |> ignore
