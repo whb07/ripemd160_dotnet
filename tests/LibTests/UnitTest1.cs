@@ -28,7 +28,7 @@ namespace LibTests
         {
             var rip = new RIPEMD160Managed();
             var hash = rip.ComputeHash(System.Text.ASCIIEncoding.ASCII.GetBytes("Hello World!"));
-            Assert.Equal("8476ee4631b9b30ac2754b0ee0c47e161d3f724c", rip.bytesToHexString(hash));
+            Assert.Equal("8476ee4631b9b30ac2754b0ee0c47e161d3f724c", rip.BytesToHexString(hash));
             rip.Dispose();
         }
 
@@ -56,15 +56,15 @@ namespace LibTests
             var rip = new RIPEMD160Managed();
             foreach (KeyValuePair<string, string> item in RIPEMD160Vectors)
             {
-                Assert.Equal(item.Value, rip.bytesToHexString(rip.ComputeHash(System.Text.ASCIIEncoding.ASCII.GetBytes(item.Key))));
+                Assert.Equal(item.Value, rip.BytesToHexString(rip.ComputeHash(System.Text.ASCIIEncoding.ASCII.GetBytes(item.Key))));
             }
             // last two special cases
             // repeat the string 8 times
             string eightimes = String.Concat(Enumerable.Repeat("1234567890", 8));
-            Assert.Equal("9b752e45573d4b39f4dbd3323cab82bf63326bfb", rip.bytesToHexString(rip.ComputeHash(System.Text.ASCIIEncoding.ASCII.GetBytes(eightimes))));
+            Assert.Equal("9b752e45573d4b39f4dbd3323cab82bf63326bfb", rip.BytesToHexString(rip.ComputeHash(System.Text.ASCIIEncoding.ASCII.GetBytes(eightimes))));
             // repeat the string 1 million times
             string onemillion = String.Concat(Enumerable.Repeat("a", 1000000));
-            Assert.Equal("52783243c1697bdbe16d37f97f68f08325dc1528", rip.bytesToHexString(rip.ComputeHash(System.Text.ASCIIEncoding.ASCII.GetBytes(onemillion))));
+            Assert.Equal("52783243c1697bdbe16d37f97f68f08325dc1528", rip.BytesToHexString(rip.ComputeHash(System.Text.ASCIIEncoding.ASCII.GetBytes(onemillion))));
             rip.Dispose();
 
         }

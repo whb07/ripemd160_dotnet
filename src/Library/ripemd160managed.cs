@@ -8,23 +8,26 @@
 namespace Crypto.RIPEMD {
     using System;
     using System.Linq;
-
+    public struct Buff {
+        public byte[] _buffer;
+        public long _count; // Number of bytes in the hashed message
+        public uint[] _stateMD160;
+        public uint[] _blockDWords;
+    }
     public class RIPEMD160Managed : RIPEMD160
     {
-        private Memory<byte> _buffer;
-        private long _count; // Number of bytes in the hashed message
-        private Memory<uint> _stateMD160;
-        private Memory<uint> _blockDWords;
+        private Buff buffer;
 
         //
         // public constructors
         //
 
         public RIPEMD160Managed() {
-
-            _stateMD160 = new uint[5];
-            _blockDWords = new uint[16];
-            _buffer = new byte[64];
+            Buff buff = new Buff();
+            buff._stateMD160 = new uint[5];
+            buff._blockDWords = new uint[16];
+            buff._buffer = new byte[64];
+            buffer = buff;
 
             InitializeState();
         }
@@ -34,19 +37,19 @@ namespace Crypto.RIPEMD {
         //
         public static string HashInString(byte[] src){
             using (RIPEMD160Managed obj = new RIPEMD160Managed()){
-                return obj.bytesToHexString(obj.ComputeHash(src));
+                return obj.BytesToHexString(obj.ComputeHash(src));
             }
         }
 
         public static string HashInString(string src){
             using (RIPEMD160Managed obj = new RIPEMD160Managed()){
-                return obj.bytesToHexString(obj.ComputeHash(obj.stringToBytes(src)));
+                return obj.BytesToHexString(obj.ComputeHash(obj.StringToBytes(src)));
             }
         }
 
         public static byte[] HashInBytes(string src){
             using (RIPEMD160Managed obj = new RIPEMD160Managed()){
-                return obj.ComputeHash(obj.stringToBytes(src));
+                return obj.ComputeHash(obj.StringToBytes(src));
             }
         }
 
@@ -59,8 +62,10 @@ namespace Crypto.RIPEMD {
        
         public override void Initialize() {
             InitializeState();
-            ZeroOut(_blockDWords.Span, (uint) 0);
-            ZeroOut(_buffer.Span, (byte) 0);
+
+            // Zeroize potentially sensitive information.
+            Array.Clear(buffer._blockDWords, 0, buffer._blockDWords.Length);
+            Array.Clear(buffer._buffer, 0, buffer._buffer.Length);
         }
 
         [System.Security.SecuritySafeCritical]  // auto-generated
@@ -77,33 +82,17 @@ namespace Crypto.RIPEMD {
         // private methods
         //
 
-         private static void ZeroOut<T>(Span<T> buff, T val)
-        {
-            for (int i = 0; i < buff.Length; i++)
-            {
-                buff[i] = val;
-            }
-        }
-
         private void InitializeState() {
-            _count = 0;
+            buffer._count = 0;
 
             // Use the same chaining values (IVs) as in SHA1, 
             // The convention is little endian however (same as MD4)
-            var state = _stateMD160.Span;
+            var state = buffer._stateMD160;
             state[0] =  0x67452301;
             state[1] =  0xefcdab89;
             state[2] =  0x98badcfe;
             state[3] =  0x10325476;
             state[4] =  0xc3d2e1f0;
-        }
-
-        public static void BlockCopy(Span<byte> src, int srcOffset, Span<byte> dst, int dstOffset, int count)
-        {
-            for (int i = srcOffset, j = dstOffset; i < count + srcOffset; i++, j++)
-            {
-                dst[j] = src[i];
-            }
         }
 
         [System.Security.SecurityCritical]  // auto-generated
@@ -113,31 +102,31 @@ namespace Crypto.RIPEMD {
             int partInBase = ibStart;
 
             /* Compute length of buffer */
-            bufferLen = (int) (_count & 0x3f);
+            bufferLen = (int) (buffer._count & 0x3f);
 
             /* Update number of bytes */
-            _count += partInLen;
+            buffer._count += partInLen;
             if ((bufferLen > 0) && (bufferLen + partInLen >= 64))
             {
-                BlockCopy(partIn, partInBase, _buffer.Span, bufferLen, 64 - bufferLen);
+                Buffer.BlockCopy(partIn, partInBase, buffer._buffer, bufferLen, 64 - bufferLen);
                 partInBase += (64 - bufferLen);
                 partInLen -= (64 - bufferLen);
-                MDTransform(_blockDWords.Span, _stateMD160.Span, _buffer.Span);
+                MDTransform(buffer._blockDWords, buffer._stateMD160, buffer._buffer);
                 bufferLen = 0;
             }
 
             /* Copy input to temporary buffer and hash */
             while (partInLen >= 64)
             {
-                BlockCopy(partIn, partInBase, _buffer.Span, 0, 64);
+                Buffer.BlockCopy(partIn, partInBase, buffer._buffer, 0, 64);
                 partInBase += 64;
                 partInLen -= 64;
-                MDTransform(_blockDWords.Span, _stateMD160.Span, _buffer.Span);
+                MDTransform(buffer._blockDWords, buffer._stateMD160, buffer._buffer);
             }
 
             if (partInLen > 0)
             {
-                BlockCopy(partIn, partInBase, _buffer.Span, bufferLen, partInLen);
+                Buffer.BlockCopy(partIn, partInBase, buffer._buffer, bufferLen, partInLen);
             }
         }
 
@@ -151,7 +140,7 @@ namespace Crypto.RIPEMD {
             /* Compute padding: 80 00 00 ... 00 00 <bit count>
              */
 
-            padLen = 64 - (int)(_count & 0x3f);
+            padLen = 64 - (int)(buffer._count & 0x3f);
             if (padLen <= 8)
                 padLen += 64;
 
@@ -159,7 +148,7 @@ namespace Crypto.RIPEMD {
             pad[0] = 0x80;
 
             //  Convert count to bit count
-            bitCount = _count * 8;
+            bitCount = buffer._count * 8;
 
             // The convention for RIPEMD is little endian (the same as MD4)
             pad[padLen-1] = (byte) ((bitCount >> 56) & 0xff);
@@ -175,14 +164,14 @@ namespace Crypto.RIPEMD {
             _HashData(pad, 0, pad.Length);
 
             /* Store digest */
-            DWORDToLittleEndian (hash, _stateMD160.Span, 5);
+            DWORDToLittleEndian (hash, buffer._stateMD160, 5);
 
             HashValue = hash;
             return hash;
         }
 
         [System.Security.SecurityCritical]  // auto-generated
-        private static void MDTransform (Span<uint> blockDWords, Span<uint> state, Span<byte> block)
+        private static void MDTransform (uint[] blockDWords, uint[]  state, byte[] block)
         {
             uint aa = state[0];
             uint bb = state[1];
@@ -1044,7 +1033,7 @@ namespace Crypto.RIPEMD {
         private static uint J (uint x, uint y, uint z) {
             return (x ^ (y | ~z));
         }
-        internal static void DWORDToLittleEndian (byte[] block, Span<uint> x, int digits) {
+        internal static void DWORDToLittleEndian (byte[] block, uint[] x, int digits) {
             int i;
             int j;
 
@@ -1057,7 +1046,7 @@ namespace Crypto.RIPEMD {
         }
 
         [System.Security.SecurityCritical]  // auto-generated
-        internal static void DWORDFromLittleEndian (Span<uint> x, int digits, Span<byte> block) {
+        internal static void DWORDFromLittleEndian (uint[] x, int digits, byte[] block) {
             int i;
             int j;
 
@@ -1065,10 +1054,10 @@ namespace Crypto.RIPEMD {
                 x[i] =  (uint) (block[j] | (block[j+1] << 8) | (block[j+2] << 16) | (block[j+3] << 24));
         }
 
-        public string bytesToHexString(byte[] bytes){
+        public string BytesToHexString(byte[] bytes){
             return String.Concat(BitConverter.ToString(bytes).Split("-").Select(s => s.ToLower()));
         }
-        public byte[] stringToBytes(string src){
+        public byte[] StringToBytes(string src){
             return System.Text.ASCIIEncoding.ASCII.GetBytes(src);
         }
     }
