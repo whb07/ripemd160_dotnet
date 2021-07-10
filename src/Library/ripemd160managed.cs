@@ -32,14 +32,31 @@ namespace Crypto.RIPEMD {
         //
         // public methods
         //
-
-        private static void ZeroOut<T>(Span<T> buff, T val)
-        {
-            for (int i = 0; i < buff.Length; i++)
-            {
-                buff[i] = val;
+        public static string HashInString(byte[] src){
+            using (RIPEMD160Managed obj = new RIPEMD160Managed()){
+                return obj.bytesToHexString(obj.ComputeHash(src));
             }
         }
+
+        public static string HashInString(string src){
+            using (RIPEMD160Managed obj = new RIPEMD160Managed()){
+                return obj.bytesToHexString(obj.ComputeHash(obj.stringToBytes(src)));
+            }
+        }
+
+        public static byte[] HashInBytes(string src){
+            using (RIPEMD160Managed obj = new RIPEMD160Managed()){
+                return obj.ComputeHash(obj.stringToBytes(src));
+            }
+        }
+
+        public static byte[] HashInBytes(byte[] src){
+            using (RIPEMD160Managed obj = new RIPEMD160Managed()){
+                return obj.ComputeHash(src);
+            }
+        }
+
+       
         public override void Initialize() {
             InitializeState();
             ZeroOut(_blockDWords.Span, (uint) 0);
@@ -59,6 +76,14 @@ namespace Crypto.RIPEMD {
         //
         // private methods
         //
+
+         private static void ZeroOut<T>(Span<T> buff, T val)
+        {
+            for (int i = 0; i < buff.Length; i++)
+            {
+                buff[i] = val;
+            }
+        }
 
         private void InitializeState() {
             _count = 0;
@@ -1042,6 +1067,9 @@ namespace Crypto.RIPEMD {
 
         public string bytesToHexString(byte[] bytes){
             return String.Concat(BitConverter.ToString(bytes).Split("-").Select(s => s.ToLower()));
+        }
+        public byte[] stringToBytes(string src){
+            return System.Text.ASCIIEncoding.ASCII.GetBytes(src);
         }
     }
 }

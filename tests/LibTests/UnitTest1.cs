@@ -29,6 +29,25 @@ namespace LibTests
             var rip = new RIPEMD160Managed();
             var hash = rip.ComputeHash(System.Text.ASCIIEncoding.ASCII.GetBytes("Hello World!"));
             Assert.Equal("8476ee4631b9b30ac2754b0ee0c47e161d3f724c", rip.bytesToHexString(hash));
+            rip.Dispose();
+        }
+
+        [Fact]
+        public void TestHashInString()
+        {
+            const string src = "Hello World!";
+            var bytes = System.Text.ASCIIEncoding.ASCII.GetBytes(src);
+            Assert.Equal("8476ee4631b9b30ac2754b0ee0c47e161d3f724c", RIPEMD160Managed.HashInString(src));
+            Assert.Equal("8476ee4631b9b30ac2754b0ee0c47e161d3f724c", RIPEMD160Managed.HashInString(bytes));
+        }
+
+        [Fact]
+        public void TestHashInBytes()
+        {
+            byte[] expected = {107, 159, 145, 249, 91, 74, 119, 38, 0, 173, 169, 94, 22, 156, 170, 46, 18, 8, 204, 154};
+            var src = System.Text.ASCIIEncoding.ASCII.GetBytes("microsoft");
+            Assert.Equal(expected, RIPEMD160Managed.HashInBytes("microsoft"));
+            Assert.Equal(expected, RIPEMD160Managed.HashInBytes(src));
         }
 
         [Fact]
@@ -46,6 +65,7 @@ namespace LibTests
             // repeat the string 1 million times
             string onemillion = String.Concat(Enumerable.Repeat("a", 1000000));
             Assert.Equal("52783243c1697bdbe16d37f97f68f08325dc1528", rip.bytesToHexString(rip.ComputeHash(System.Text.ASCIIEncoding.ASCII.GetBytes(onemillion))));
+            rip.Dispose();
 
         }
     }
