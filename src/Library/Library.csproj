@@ -2,7 +2,7 @@
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
     <PackageId>Crypto.RIPEMD</PackageId>
-    <Version>1.0.2</Version>
+    <Version>1.0.3</Version>
     <Description>
       This library is a port of the .NET Framework's Crypto RIPEMD160 class to run
       in a .NET5 runtime. For more information see the canonical source -

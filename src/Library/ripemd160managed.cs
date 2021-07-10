@@ -16,6 +16,8 @@ namespace Crypto.RIPEMD {
     }
     public class RIPEMD160Managed : RIPEMD160
     {
+        // From literature, it appears the GC pressure on structs is less than other types.
+        // So to make up for removing 'fixed', just move the buffers inside the struct.
         private Buff buffer;
 
         //
